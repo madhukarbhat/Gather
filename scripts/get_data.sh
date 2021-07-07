@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# - This is written to execute on WSL2 Ubuntu 20.04.
+# - The use case is tracking data for COVID19.
+# - Depends on gnuplot to create chart
+
 workdir='D:\Madhukar\covid19india'
 wslwdir="$(wslpath "${workdir}")"
 logsdir="${wslwdir}/log"

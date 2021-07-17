@@ -1,13 +1,12 @@
-#!/bin/bash
+#!/bin/ksh
 
-workdir='D:\Madhukar\covid19india'
-wslwdir="$(wslpath "${workdir}")"
-logsdir="${wslwdir}/log"
-infile="${wslwdir}/urls.txt"
+scriptdir="${HOME}/github/Gather"
+workdir="${HOME}/covid"
+logsdir="${workdir}/log"
+infile="${scriptdir}/config/urls.txt"
 dtfile='case_time_series.csv'
 dir=$(date +%Y-%m-%d)
-datadir="${workdir}\\${dir}"
-wslddir="$(wslpath "${datadir}")"
+datadir="${workdir}/${dir}"
 execlog="${logsdir}/get-data-${dir}.log"
 
 # --------------------------------------------------------------------
@@ -16,17 +15,21 @@ function get_data {
     local urls=${1}
     if [[ -e ${urls} ]]
     then
-	if [[ ! -e ${dir} ]]
-	then
-	    mkdir ${dir}
-	else
-	    explorer.exe "${datadir}"
-	    echo "[info] Directory exists: ${datadir}"
-	    exit 0
-	fi
-	pushd ${dir} > /dev/null
-        wget -i ${urls}
-	popd  > /dev/null
+        if [[ ! -e ${dir} ]]
+        then
+            mkdir ${dir}
+        else
+            explorer.exe "${datadir}"
+            echo "[info] Directory exists: ${datadir}"
+            exit 0
+        fi
+
+        # The curl xargs magic source:
+        # https://unix.stackexchange.com/questions/281991/pass-a-list-of-urls-contained-in-a-file-to-curl
+        (
+            cd ${dir}
+            cat ${urls} | xargs -I{} curl -# -O {}
+        )
     else
         echo "[Error] Could not open the file with URLs - ${urls}"
         return 1
@@ -58,7 +61,7 @@ function plot_data {
     local y_end2=$(grep -v 'Date' ${datfile} | awk -F ',' '{print $3}' | sort -n | tail -1)
     local y_end3=$(grep -v 'Date' ${datfile} | awk -F ',' '{print $3}' | sort -n | tail -1)
     local y_end=$(printf "${y_end1}\n${y_end2}\n${y_end3}\n" | sort -n | tail -1)
-    
+
     # Plot downloaded data with GNUPlot
     gnuplot <<EOF
     set xdata time
@@ -66,7 +69,7 @@ function plot_data {
     set format x "%Y/%m/%d"
     set datafile sep ','
 
-    set xrange ["${x_beg}":"${x_end}"]	
+    set xrange ["${x_beg}":"${x_end}"]
     set yrange [${y_beg}:${y_end}]
 
     set key left top
@@ -88,12 +91,12 @@ EOF
 
 function main {
     get_data ${infile} 2> ${execlog}
-    if [[ $? -eq 0 ]] && [[ -e ${wslddir}/${dtfile} ]]
+    if [[ $? -eq 0 ]] && [[ -e ${datadir}/${dtfile} ]]
     then
-        plot_data ${wslddir}/${dtfile}
-	explorer.exe "${datadir}"
+        plot_data ${datadir}/${dtfile}
+        ls -l "${datadir}"
     else
-        echo "[Error] Could not find - ${wslddir}/${dtfile}"
+        echo "[Error] Could not find - ${datadir}/${dtfile}"
         exit 1
     fi
     return

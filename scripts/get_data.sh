@@ -1,13 +1,12 @@
-#!/bin/bash
+#!/bin/ksh
 
-workdir='D:\Madhukar\covid19india'
-wslwdir="$(wslpath "${workdir}")"
-logsdir="${wslwdir}/log"
-infile="${wslwdir}/urls.txt"
+scriptdir="${HOME}/github/Gather"
+workdir="${HOME}/covid"
+logsdir="${workdir}/log"
+infile="${scriptdir}/config/urls.txt"
 dtfile='case_time_series.csv'
 dir=$(date +%Y-%m-%d)
-datadir="${workdir}\\${dir}"
-wslddir="$(wslpath "${datadir}")"
+datadir="${workdir}/${dir}"
 execlog="${logsdir}/get-data-${dir}.log"
 
 # --------------------------------------------------------------------
@@ -24,9 +23,13 @@ function get_data {
 	    echo "[info] Directory exists: ${datadir}"
 	    exit 0
 	fi
-	pushd ${dir} > /dev/null
-        wget -i ${urls}
-	popd  > /dev/null
+
+	# The curl xargs magic source:
+	# https://unix.stackexchange.com/questions/281991/pass-a-list-of-urls-contained-in-a-file-to-curl
+	(
+	    cd ${dir}
+            cat ${urls} | xargs -I{} curl -# -O {}
+	)
     else
         echo "[Error] Could not open the file with URLs - ${urls}"
         return 1
@@ -88,12 +91,12 @@ EOF
 
 function main {
     get_data ${infile} 2> ${execlog}
-    if [[ $? -eq 0 ]] && [[ -e ${wslddir}/${dtfile} ]]
+    if [[ $? -eq 0 ]] && [[ -e ${datadir}/${dtfile} ]]
     then
-        plot_data ${wslddir}/${dtfile}
-	explorer.exe "${datadir}"
+        plot_data ${datadir}/${dtfile}
+	ls -l "${datadir}"
     else
-        echo "[Error] Could not find - ${wslddir}/${dtfile}"
+        echo "[Error] Could not find - ${datadir}/${dtfile}"
         exit 1
     fi
     return

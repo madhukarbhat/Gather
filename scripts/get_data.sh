@@ -15,21 +15,21 @@ function get_data {
     local urls=${1}
     if [[ -e ${urls} ]]
     then
-	if [[ ! -e ${dir} ]]
-	then
-	    mkdir ${dir}
-	else
-	    explorer.exe "${datadir}"
-	    echo "[info] Directory exists: ${datadir}"
-	    exit 0
-	fi
+        if [[ ! -e ${dir} ]]
+        then
+            mkdir ${dir}
+        else
+            explorer.exe "${datadir}"
+            echo "[info] Directory exists: ${datadir}"
+            exit 0
+        fi
 
-	# The curl xargs magic source:
-	# https://unix.stackexchange.com/questions/281991/pass-a-list-of-urls-contained-in-a-file-to-curl
-	(
-	    cd ${dir}
+        # The curl xargs magic source:
+        # https://unix.stackexchange.com/questions/281991/pass-a-list-of-urls-contained-in-a-file-to-curl
+        (
+            cd ${dir}
             cat ${urls} | xargs -I{} curl -# -O {}
-	)
+        )
     else
         echo "[Error] Could not open the file with URLs - ${urls}"
         return 1
@@ -61,7 +61,7 @@ function plot_data {
     local y_end2=$(grep -v 'Date' ${datfile} | awk -F ',' '{print $3}' | sort -n | tail -1)
     local y_end3=$(grep -v 'Date' ${datfile} | awk -F ',' '{print $3}' | sort -n | tail -1)
     local y_end=$(printf "${y_end1}\n${y_end2}\n${y_end3}\n" | sort -n | tail -1)
-    
+
     # Plot downloaded data with GNUPlot
     gnuplot <<EOF
     set xdata time
@@ -69,7 +69,7 @@ function plot_data {
     set format x "%Y/%m/%d"
     set datafile sep ','
 
-    set xrange ["${x_beg}":"${x_end}"]	
+    set xrange ["${x_beg}":"${x_end}"]
     set yrange [${y_beg}:${y_end}]
 
     set key left top
@@ -94,7 +94,7 @@ function main {
     if [[ $? -eq 0 ]] && [[ -e ${datadir}/${dtfile} ]]
     then
         plot_data ${datadir}/${dtfile}
-	ls -l "${datadir}"
+        ls -l "${datadir}"
     else
         echo "[Error] Could not find - ${datadir}/${dtfile}"
         exit 1

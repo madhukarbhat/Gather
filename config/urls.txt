@@ -2,4 +2,4 @@ https://api.covid19india.org/csv/latest/case_time_series.csv
 https://api.covid19india.org/csv/latest/state_wise.csv
 https://api.covid19india.org/csv/latest/districts.csv
 https://api.covid19india.org/csv/latest/tested_numbers_icmr_data.csv
-https://api.covid19india.org/csv/latest/vaccine_doses_statewise.csv
+https://api.covid19india.org/csv/latest/vaccine_doses_statewise_v2.csv
